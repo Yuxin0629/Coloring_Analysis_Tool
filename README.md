@@ -1,6 +1,6 @@
-# 儿童涂色作品分析系统
+# 涂色图像分析系统
 
-基于 React 的儿童涂色作品智能分析前端应用，用于幼儿园及早期教育机构对儿童涂色作品进行多维度的发展能力评估。
+基于 React 的涂色图像分析系统前端应用。
 
 ## 功能模块
 
@@ -21,7 +21,6 @@
 ### 3. 报告中心
 - **全局汇总报告**: 项目级别的整体分析统计
 - **分析摘要报告**: 详细的分析维度报告
-- **个人报告**: 单个儿童的涂色能力评估报告
 - **单图报告**: 单张涂色作品的详细分析报告
 
 ### 4. 工具箱
@@ -114,7 +113,6 @@ npm run build
 | `/analysis/create` | 创建分析项目 |
 | `/analysis/:projectId/report` | 全局汇总报告 |
 | `/analysis/:projectId/report/summary` | 分析摘要报告 |
-| `/analysis/:projectId/report/:childId` | 个人报告 |
 | `/analysis/:projectId/report/image/:imageId` | 单图报告 |
 | `/toolbox` | 工具箱首页 |
 | `/toolbox/edge-detection` | 边缘检测工具 |
