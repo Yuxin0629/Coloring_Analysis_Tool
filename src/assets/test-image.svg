@@ -1,0 +1,27 @@
+<svg width="600" height="400" viewBox="0 0 600 400"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <rect x="0" y="0" width="600" height="400" fill="#fafafa"/>
+
+  <!-- 区域 A：不规则多边形（左上） -->
+  <polygon
+    points="90,80 160,60 230,100 210,160 140,170 80,130"
+    fill="#e6e6e6"
+    stroke="#9a9a9a"
+    stroke-width="2"/>
+
+  <!-- 区域 B：六边形（右上） -->
+  <polygon
+    points="380,70 460,70 520,120 460,170 380,170 340,120"
+    fill="#e6e6e6"
+    stroke="#9a9a9a"
+    stroke-width="2"/>
+
+  <!-- 区域 C：菱形（中下） -->
+  <polygon
+    points="300,230 360,300 300,360 240,300"
+    fill="#e6e6e6"
+    stroke="#9a9a9a"
+    stroke-width="2"/>
+
+</svg>
