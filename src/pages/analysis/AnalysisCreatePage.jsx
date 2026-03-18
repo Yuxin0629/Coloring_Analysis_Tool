@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  Input, Button, Modal, Progress, Card, Typography, List, Checkbox, message, Tag, Steps,
-  Upload, Space, Divider, Radio, Empty, Spin, Form, Select, Table, Badge, Tooltip, Slider
+  Input, Button, Progress, Card, Typography, Checkbox, message, Tag, Steps,
+  Upload, Space, Divider, Empty, Spin, Badge, Slider
 } from 'antd';
 import {
   ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined,
-  CheckCircleOutlined, ReloadOutlined, PlusOutlined, DeleteOutlined,
+  CheckCircleOutlined, ReloadOutlined, DeleteOutlined,
   EditOutlined, DatabaseOutlined, BorderOutlined, ScanOutlined,
-  ZoomOutOutlined, ZoomInOutlined, PictureOutlined, SettingOutlined,
+  PictureOutlined, SettingOutlined,
   FileImageOutlined, AimOutlined, BgColorsOutlined, FolderOpenOutlined,
-  FileImageFilled, LayoutOutlined, AreaChartOutlined, AppstoreOutlined,
+  LayoutOutlined, AreaChartOutlined, AppstoreOutlined,
   ExperimentOutlined, PlayCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -49,13 +49,6 @@ const datasetGroups = [
   },
 ];
 
-// 矫正模板数据
-const correctionTemplates = [
-  { id: 'tpl-1', name: 'A4纸模板', description: '标准A4纸张透视矫正', size: '210x297mm' },
-  { id: 'tpl-2', name: '涂色卡模板', description: '儿童涂色卡片专用模板', size: '150x150mm' },
-  { id: 'tpl-3', name: '方格纸模板', description: '方格练习纸矫正', size: '200x200mm' },
-];
-
 // 分析方法类型
 const ANALYSIS_METHODS = [
   { key: 'color_distribution', label: '颜色分布分析', description: '统计指定区域内各颜色的占比', icon: <BgColorsOutlined />, color: '#1890ff' },
@@ -92,8 +85,6 @@ const AnalysisCreatePage = () => {
   const [correctionProgress, setCorrectionProgress] = useState(0);
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [correctionComplete, setCorrectionComplete] = useState(false);
-  const [correctionMode, setCorrectionMode] = useState('auto');
-  const [selectedCorrectionTemplate, setSelectedCorrectionTemplate] = useState(null);
   const [correctedImages, setCorrectedImages] = useState([]);
 
   // 步骤3: 边缘检测/区域定义
@@ -183,6 +174,7 @@ const AnalysisCreatePage = () => {
     if (projectId && !isRestored) {
       loadProjectFromStorage(projectId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, isRestored]);
 
   // 定期自动保存（每30秒）
@@ -208,7 +200,6 @@ const AnalysisCreatePage = () => {
     if (currentStep === 2 && regions.length === 0) { message.warning('请至少定义一个分析区域'); return; }
     if (currentStep === 3) {
       const configuredCount = Object.keys(imageAnalysisConfig).length;
-      const totalImages = correctedImages.length;
       if (configuredCount === 0) { message.warning('请至少为一个图片配置分析项'); return; }
     }
 
@@ -249,10 +240,6 @@ const AnalysisCreatePage = () => {
     }
   };
 
-  const handleRemoveDataset = (datasetId) => {
-    setSelectedDatasets(selectedDatasets.filter(d => d.id !== datasetId));
-  };
-
   const handleTemplateSelect = (template) => {
     setSelectedTemplateImage(template);
   };
@@ -276,6 +263,7 @@ const AnalysisCreatePage = () => {
     if (currentStep === 1 && !correctionComplete && !isCorrecting && selectedDatasets.length > 0) {
       startCorrection();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
   const startCorrection = () => {

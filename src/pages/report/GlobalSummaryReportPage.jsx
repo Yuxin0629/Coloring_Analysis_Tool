@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { 
   Card, Typography, Button, Table, Tag, 
-  Row, Col, Statistic, Space, Select, DatePicker, Progress, Tooltip,
+  Row, Col, Statistic, Space, Select, DatePicker, Progress,
   Radio, Divider, message
 } from 'antd';
 import { 
   ArrowLeftOutlined, DownloadOutlined, FileExcelOutlined, 
-  FileTextOutlined, EyeOutlined, BarChartOutlined, LineChartOutlined,
+  FileTextOutlined, EyeOutlined, BarChartOutlined,
   PieChartOutlined, FilePdfOutlined, BgColorsOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,7 +14,6 @@ import { colors } from '../../components/common/constants';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 // 模拟全局汇总报告数据
 const globalSummaryData = {

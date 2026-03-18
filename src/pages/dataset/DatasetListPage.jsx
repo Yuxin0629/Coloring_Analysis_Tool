@@ -317,15 +317,6 @@ const DatasetListPage = () => {
     });
   };
 
-  // 全选/取消全选
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedDatasets(filteredDatasets.map(ds => ds.id));
-    } else {
-      setSelectedDatasets([]);
-    }
-  };
-
   // 打开编辑弹窗
   const openEditModal = (dataset) => {
     setCurrentDataset(dataset);

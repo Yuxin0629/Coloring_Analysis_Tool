@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeftOutlined, ZoomInOutlined, ZoomOutOutlined,
   UploadOutlined, DownloadOutlined, UndoOutlined,
-  DragOutlined, EyeOutlined, ClearOutlined, CheckCircleOutlined,
-  FileImageOutlined, PlusOutlined, ReloadOutlined
+  FileImageOutlined, PlusOutlined, CheckCircleOutlined
 } from "@ant-design/icons";
-import { Button, Card, Space, Radio, Typography, message, Upload, Slider, Row, Col, Tag, Modal, List, Spin } from "antd";
+import { Button, Card, Space, Radio, Typography, message, Upload, Slider, Row, Col, Tag, Modal, List } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -56,7 +55,7 @@ export default function ImageCorrectionPage() {
   
   // 模板自动矫正相关状态
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
-  const [existingTemplates, setExistingTemplates] = useState([
+  const [existingTemplates] = useState([
     { id: "template-1", name: "模板1", thumbnail: "📄", size: "210x297mm" },
     { id: "template-2", name: "模板2", thumbnail: "🎨", size: "150x150mm" },
     { id: "template-3", name: "模板3", thumbnail: "⬜", size: "200x200mm" },

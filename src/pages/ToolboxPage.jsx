@@ -1,7 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../components/common/Button";
-import Card from "../components/common/Card";
 import { colors, styles as stylesConfig } from "../components/common/constants";
 
 // 模拟工具数据（关联路由）

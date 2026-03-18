@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { colors, styles as stylesConfig } from "../common/constants";
 import Topbar from "./Topbar";

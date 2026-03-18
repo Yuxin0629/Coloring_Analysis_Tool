@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Dropdown, Modal, Form, Input, Button, message, Avatar, Upload, Tabs } from "antd";
+import React, { useState } from "react";
+import { Dropdown, Modal, Form, Input, Button, message, Avatar, Upload } from "antd";
 import {
   UserOutlined,
   LogoutOutlined,

@@ -12,17 +12,6 @@ import testImage from "../../assets/test-image.svg";
 
 const { Title, Text } = Typography;
 
-// 模拟测试图像（使用占位符，实际项目中替换为真实图像）
-const testImagePlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23f0f0f0' width='600' height='400'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='20'%3E测试涂色图像%3C/text%3E%3C/svg%3E";
-
-// 边缘检测配置
-const edgeDetectionConfig = {
-  threshold: 30,
-  blurRadius: 2,
-  minEdgeLength: 10,
-  maxEdges: 100
-};
-
 // 模拟区域数据 - 初始为空，等待后端返回
 const initialRegions = [];
 
@@ -35,7 +24,6 @@ export default function EdgeDetectionPage() {
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [isDetecting, setIsDetecting] = useState(false);
   const [hover, setHover] = useState(null);
-  const [lastClick, setLastClick] = useState(null);
   const [showOriginal, setShowOriginal] = useState(true);
   const [showRegions, setShowRegions] = useState(true);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
@@ -227,7 +215,6 @@ export default function EdgeDetectionPage() {
     } else {
       const hit = hitTest({ x: normX, y: normY });
       setSelectedRegionId(hit);
-      setLastClick({ canvasX, canvasY, normX, normY, hit });
     }
   };
 

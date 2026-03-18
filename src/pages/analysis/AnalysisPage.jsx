@@ -240,7 +240,7 @@ const AnalysisPage = () => {
   });
   
   const [filteredProjects, setFilteredProjects] = useState(projects);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   // 筛选状态
   const [searchValue, setSearchValue] = useState('');

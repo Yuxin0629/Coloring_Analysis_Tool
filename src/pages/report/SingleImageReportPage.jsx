@@ -1,18 +1,18 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
-  Card, Typography, Button, Table, Tag, 
+  Card, Typography, Button, 
   Row, Col, Space, Select, Progress, message, Divider, Badge
 } from 'antd';
 import { 
-  ArrowLeftOutlined, DownloadOutlined, PictureOutlined,
-  FileTextOutlined, EyeOutlined, BarChartOutlined,
+  ArrowLeftOutlined, DownloadOutlined,
+  BarChartOutlined,
   BgColorsOutlined, BorderOutlined, AimOutlined,
   PieChartOutlined, AreaChartOutlined, CheckCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { colors } from '../../components/common/constants';
 import { pointInPolygon } from '../../utils/hitTest';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
