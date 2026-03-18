@@ -1,6 +1,7 @@
 {
   "name": "front210",
   "version": "0.1.0",
+  "homepage": "https://Yuxin0629.github.io/Coloring_Analysis_Tool",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

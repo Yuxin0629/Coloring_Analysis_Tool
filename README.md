@@ -51,8 +51,6 @@ src/
 │   │   └── DatasetListPage.jsx
 │   ├── report/           # 报告模块
 │   │   ├── GlobalSummaryReportPage.jsx
-│   │   ├── AnalysisReportPage.jsx
-│   │   ├── PersonalReportPage.jsx
 │   │   └── SingleImageReportPage.jsx
 │   ├── toolbox/          # 工具箱
 │   │   ├── EdgeDetectionPage.jsx
@@ -76,7 +74,7 @@ src/
 - **色彩丰富度**: 评估使用颜色的种类数量
 - **颜色搭配**: 分析颜色搭配的协调性
 - **覆盖率**: 评估涂色区域的覆盖完整度
-- **注意力集中度**: 评估涂色过程中的注意力表现
+- **注意力集中度**: 评估涂色过程中的专注程度表现
 
 ## 快速开始
 
@@ -112,7 +110,6 @@ npm run build
 | `/analysis` | 分析项目列表 |
 | `/analysis/create` | 创建分析项目 |
 | `/analysis/:projectId/report` | 全局汇总报告 |
-| `/analysis/:projectId/report/summary` | 分析摘要报告 |
 | `/analysis/:projectId/report/image/:imageId` | 单图报告 |
 | `/toolbox` | 工具箱首页 |
 | `/toolbox/edge-detection` | 边缘检测工具 |
@@ -125,10 +122,10 @@ npm run build
 ```javascript
 {
   id: 1,
-  name: '精细动作能力分析模板',
-  description: '评估儿童涂色过程中精细动作控制能力',
+  name: '标准涂色分析模板',
+  description: '适用于标准涂色图像的综合分析',
   uploadTime: '2025-03-10 14:30:00',
-  uploadBy: '张老师',
+  uploadBy: '管理员',
   templateImage: '/src/assets/template.png',
   analysisMethods: [
     { name: '线条粗细', enabled: true, description: '检测涂色线条的粗细均匀程度' },

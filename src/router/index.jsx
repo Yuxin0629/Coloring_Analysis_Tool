@@ -10,7 +10,6 @@ import DatasetListPage from "../pages/dataset/DatasetListPage";
 import AnalysisPage from "../pages/analysis/AnalysisPage";
 import AnalysisCreatePage from "../pages/analysis/AnalysisCreatePage";
 // 报告模块页面
-import AnalysisReportPage from "../pages/report/AnalysisReportPage";
 import SingleImageReportPage from "../pages/report/SingleImageReportPage";
 import GlobalSummaryReportPage from "../pages/report/GlobalSummaryReportPage";
 // 工具箱页面
@@ -47,7 +46,6 @@ const routesConfig = [
       
       // 报告模块路由
       { path: "analysis/:projectId/report", element: <GlobalSummaryReportPage /> },
-      { path: "analysis/:projectId/report/summary", element: <AnalysisReportPage /> },
       { path: "analysis/:projectId/report/image/:imageId", element: <SingleImageReportPage /> },
       
       // 工具箱路由
