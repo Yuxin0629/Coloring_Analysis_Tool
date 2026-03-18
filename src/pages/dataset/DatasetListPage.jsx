@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Card, Typography, Tag, Input, Dropdown, Modal, message, Button,
-  Upload, Form, Select, Row, Col, Space, Checkbox, Table, Pagination,
-  Empty, Image, Grid
+  Card, Typography, Button, Input, Upload, Table,
+  Row, Col, Space, Select, Checkbox,
+  Pagination, Empty, Image, Grid, Modal, message, Form, Tag, Dropdown
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined,
@@ -15,7 +15,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { colors, styles } from '../../components/common/constants';
 import templateImage from '../../assets/template.png';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 const { Dragger } = Upload;

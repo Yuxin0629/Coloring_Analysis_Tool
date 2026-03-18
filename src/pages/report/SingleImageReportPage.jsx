@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   Card, Typography, Button, 
-  Row, Col, Space, Select, Progress, message, Divider, Badge
+  Row, Col, Space, Select, message, Badge
 } from 'antd';
 import { 
   ArrowLeftOutlined, DownloadOutlined,
@@ -10,7 +10,6 @@ import {
   PieChartOutlined, AreaChartOutlined, CheckCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { colors } from '../../components/common/constants';
 import { pointInPolygon } from '../../utils/hitTest';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -207,6 +206,7 @@ const SingleImageReportPage = () => {
       w: imgSizeRef.current.w * displayScale, 
       h: imgSizeRef.current.h * displayScale 
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageLoaded]);
 
   // 加载真实图片
@@ -336,30 +336,10 @@ const SingleImageReportPage = () => {
     navigate(`/analysis/${projectId}/report`);
   };
 
-  // 重新分析 - 跳转到分析创建页面
-  const handleReanalyze = () => {
-    navigate('/analysis/create', { 
-      state: { 
-        projectId, 
-        imageId,
-        mode: 'reanalyze'
-      } 
-    });
-  };
-
   // 获取选中区域的分析数据
   const selectedRegionData = selectedRegion 
     ? singleImageReportData.regionAnalysis.regions.find(r => r.name === selectedRegion.name)
     : null;
-
-  // 准备面积对比数据
-  const areaComparisonData = singleImageReportData.regionAnalysis.regions
-    .filter(r => r.methods.area_calculation)
-    .map(r => ({
-      name: r.name,
-      coverage: r.methods.area_calculation.coverage,
-      area: r.methods.area_calculation.area
-    }));
 
   return (
     <div style={{ width: '100%', height: '100%', padding: '0 24px', overflow: 'auto' }}>

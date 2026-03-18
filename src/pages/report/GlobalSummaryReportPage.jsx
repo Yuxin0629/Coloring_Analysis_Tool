@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Card, Typography, Button, Table, Tag, 
-  Row, Col, Statistic, Space, Select, DatePicker, Progress,
+  Row, Col, Statistic, Space, Select, Progress,
   Radio, Divider, message
 } from 'antd';
 import { 
@@ -10,7 +10,6 @@ import {
   PieChartOutlined, FilePdfOutlined, BgColorsOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { colors } from '../../components/common/constants';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
