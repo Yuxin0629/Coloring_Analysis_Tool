@@ -17,6 +17,12 @@ import { colors, styles } from '../../components/common/constants';
 import templateImage from '../../assets/template.png';
 import { pointInPolygon } from '../../utils/hitTest';
 
+// API imports
+import { datasetApi } from '../../api/dataset';
+import { templateApi } from '../../api/template';
+import { toolApi } from '../../api/tool';
+import { analysisApi } from '../../api/analysis';
+
 const { Title, Text } = Typography;
 
 // ==================== 模拟数据 ====================
@@ -67,19 +73,68 @@ const AnalysisCreatePage = () => {
   const [loading, setLoading] = useState(false);
   const [isRestored, setIsRestored] = useState(false);
   
+  // 模板图片列表（需要在fetchTemplates之前声明）
+  const [templateImages, setTemplateImages] = useState([]);
+
   // 从URL参数或location state获取项目ID
   const projectId = urlProjectId || location.state?.projectId;
+
+  // 使用真实API获取数据集和模板列表
+  // 数据集和模板的加载状态
+  const [backendDatasets, setBackendDatasets] = useState([]);
+  const [datasetsLoading, setDatasetsLoading] = useState(false);
+  const [backendTemplates, setBackendTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+
+  // 获取数据集
+  const fetchDatasets = useCallback(async () => {
+    setDatasetsLoading(true);
+    try {
+      const datasets = await datasetApi.getDatasets();
+      setBackendDatasets(datasets || []);
+    } catch (error) {
+      message.error('获取数据集失败');
+      setBackendDatasets([]);
+    } finally {
+      setDatasetsLoading(false);
+    }
+  }, []);
+
+  // 获取模板
+  const fetchTemplates = useCallback(async () => {
+    setTemplatesLoading(true);
+    try {
+      const templates = await templateApi.getTemplates();
+      setBackendTemplates(templates || []);
+      // 更新模板图片列表
+      if (templates && templates.length > 0) {
+        setTemplateImages(templates.map(t => ({
+          id: t.id,
+          name: t.name,
+          url: t.url || templateImage,
+          description: t.description || '系统模板'
+        })));
+      }
+    } catch (error) {
+      message.error('获取模板失败');
+      setBackendTemplates([]);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
+  // 组件加载时获取数据
+  useEffect(() => {
+    fetchDatasets();
+    fetchTemplates();
+  }, [fetchDatasets, fetchTemplates]);
 
   // 步骤1: 数据集和模板选择
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [selectedDatasets, setSelectedDatasets] = useState([]);
   const [selectedTemplateImage, setSelectedTemplateImage] = useState(null);
-  const [templateImages, setTemplateImages] = useState([
-    { id: 'tmpl-1', name: '标准涂色卡A', url: templateImage, description: '150x150mm标准涂色卡' },
-    { id: 'tmpl-2', name: '标准涂色卡B', url: templateImage, description: '200x200mm大方格涂色卡' },
-    { id: 'tmpl-3', name: 'A4涂色纸', url: templateImage, description: 'A4尺寸自由涂色纸' },
-  ]);
+  const [createdProjectId, setCreatedProjectId] = useState(null); // 后端创建的项目ID
 
   // 步骤2: 图像矫正
   const [correctionProgress, setCorrectionProgress] = useState(0);
@@ -187,11 +242,56 @@ const AnalysisCreatePage = () => {
     }
   }, [projectName, currentStep, saveProjectToStorage]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 0) {
       if (!projectName.trim()) { message.warning('请输入项目名称'); return; }
       if (selectedDatasets.length === 0) { message.warning('请至少选择一个数据集'); return; }
       if (!selectedTemplateImage) { message.warning('请选择模板图片'); return; }
+      
+      // 步骤1: 创建项目并提交数据集和模板信息到后端
+      try {
+        setLoading(true);
+        
+        // 1. 创建分析项目
+        const project = await analysisApi.createProject({
+          name: projectName,
+          description: projectDescription,
+          datasetIds: selectedDatasets.map(d => d.id),
+          templateId: selectedTemplateImage.id
+        });
+        
+        setCreatedProjectId(project.id);
+        message.success('项目创建成功，进入图像矫正步骤');
+        
+        // 2. 获取选中数据集的所有图片
+        const allImages = [];
+        for (const dataset of selectedDatasets) {
+          const images = await datasetApi.getDatasetImages(dataset.id);
+          allImages.push(...images.map(img => ({
+            ...img,
+            datasetId: dataset.id,
+            datasetName: dataset.name
+          })));
+        }
+        
+        // 3. 准备矫正图片列表（步骤2使用）
+        const imagesForCorrection = allImages.map((img, idx) => ({
+          id: img.id,
+          name: img.name,
+          original: img.url,
+          corrected: null, // 等待后端返回
+          dataset: img.datasetName,
+          status: 'pending'
+        }));
+        
+        setCorrectedImages(imagesForCorrection);
+        setLoading(false);
+        
+      } catch (error) {
+        setLoading(false);
+        message.error('项目创建失败');
+        return;
+      }
     }
     if (currentStep === 1) {
       if (isCorrecting) { message.warning('图像矫正正在进行中，请稍候'); return; }
@@ -850,47 +950,42 @@ const AnalysisCreatePage = () => {
               <Text type="secondary" style={{ fontSize: 13 }}>已选择</Text>
             </Badge>
           }
+          loading={datasetsLoading}
           styles={{ body: { padding: '20px', overflow: 'auto', maxHeight: 'calc(100vh - 380px)' } }}
           style={{ ...cardStyle, height: '100%' }}
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-            {datasetGroups.map(group => (
-              <div key={group.id} style={groupCardStyle}>
-                <div style={groupHeaderStyle}>
-                  <Text strong style={{ fontSize: 15, color: colors.textPrimary }}>{group.name}</Text>
-                  <Tag size="small" style={{ fontSize: 11 }}>{group.datasets.length} 个数据集</Tag>
-                </div>
-                <Space direction="vertical" style={{ width: '100%' }} size={8}>
-                  {group.datasets.map(dataset => {
-                    const isSelected = selectedDatasets.find(d => d.id === dataset.id);
-                    return (
-                      <div
-                        key={dataset.id}
-                        onClick={() => handleDatasetToggle(dataset, group.name)}
-                        style={{
-                          ...datasetItemStyle,
-                          backgroundColor: isSelected ? colors.primaryLight : colors.white,
-                          borderColor: isSelected ? colors.primary : colors.neutralDark,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <Checkbox checked={!!isSelected} />
-                          <div>
-                            <Text style={{ fontSize: 14, fontWeight: 500 }}>{dataset.name}</Text>
-                            <div>
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {dataset.imageCount} 张图片 · {dataset.year}
-                              </Text>
-                            </div>
-                          </div>
+            {backendDatasets.length === 0 ? (
+              <Empty description="暂无数据集" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            ) : (
+              backendDatasets.map(dataset => {
+                const isSelected = selectedDatasets.find(d => d.id === dataset.id);
+                return (
+                  <div
+                    key={dataset.id}
+                    onClick={() => handleDatasetToggle(dataset, dataset.groupName || '默认分组')}
+                    style={{
+                      ...datasetItemStyle,
+                      backgroundColor: isSelected ? colors.primaryLight : colors.white,
+                      borderColor: isSelected ? colors.primary : colors.neutralDark,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <Checkbox checked={!!isSelected} />
+                      <div>
+                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{dataset.name}</Text>
+                        <div>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {dataset.imageCount} 张图片 · {dataset.year}
+                          </Text>
                         </div>
-                        {isSelected && <CheckCircleOutlined style={{ color: colors.success }} />}
                       </div>
-                    );
-                  })}
-                </Space>
-              </div>
-            ))}
+                    </div>
+                    {isSelected && <CheckCircleOutlined style={{ color: colors.success }} />}
+                  </div>
+                );
+              })
+            )}
           </div>
         </Card>
       </div>
