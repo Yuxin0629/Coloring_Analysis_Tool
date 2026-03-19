@@ -20,40 +20,11 @@ import { pointInPolygon } from '../../utils/hitTest';
 // API imports
 import { datasetApi } from '../../api/dataset';
 import { templateApi } from '../../api/template';
-import { toolApi } from '../../api/tool';
 import { analysisApi } from '../../api/analysis';
 
 const { Title, Text } = Typography;
 
-// ==================== 模拟数据 ====================
-
-// 分组数据集数据
-const datasetGroups = [
-  {
-    id: 'group-1',
-    name: '桃花幼儿园',
-    datasets: [
-      { id: 'ds-1', name: '大班涂色数据集2025', imageCount: 120, year: 2025 },
-      { id: 'ds-2', name: '中班日常涂色', imageCount: 86, year: 2025 },
-      { id: 'ds-3', name: '小班入门涂色', imageCount: 45, year: 2025 },
-    ]
-  },
-  {
-    id: 'group-2',
-    name: '小草幼儿园',
-    datasets: [
-      { id: 'ds-4', name: '中班春季涂色', imageCount: 92, year: 2025 },
-      { id: 'ds-5', name: '大班毕业作品集', imageCount: 156, year: 2024 },
-    ]
-  },
-  {
-    id: 'group-3',
-    name: '小树幼儿园',
-    datasets: [
-      { id: 'ds-6', name: '全园评估汇总', imageCount: 234, year: 2024 },
-    ]
-  },
-];
+// ==================== 分析方法配置 ====================
 
 // 分析方法类型
 const ANALYSIS_METHODS = [
@@ -83,7 +54,9 @@ const AnalysisCreatePage = () => {
   // 数据集和模板的加载状态
   const [backendDatasets, setBackendDatasets] = useState([]);
   const [datasetsLoading, setDatasetsLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [backendTemplates, setBackendTemplates] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
   // 获取数据集
@@ -134,6 +107,7 @@ const AnalysisCreatePage = () => {
   const [projectDescription, setProjectDescription] = useState('');
   const [selectedDatasets, setSelectedDatasets] = useState([]);
   const [selectedTemplateImage, setSelectedTemplateImage] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [createdProjectId, setCreatedProjectId] = useState(null); // 后端创建的项目ID
 
   // 步骤2: 图像矫正
@@ -1869,22 +1843,6 @@ const summaryItemStyle = {
   alignItems: 'center',
   gap: 8,
   fontSize: 13,
-};
-
-const groupCardStyle = {
-  background: colors.neutral,
-  borderRadius: 10,
-  padding: 16,
-  border: '1px solid ' + colors.neutralDark,
-};
-
-const groupHeaderStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: 12,
-  paddingBottom: 12,
-  borderBottom: '1px solid ' + colors.neutralDark,
 };
 
 const datasetItemStyle = {
