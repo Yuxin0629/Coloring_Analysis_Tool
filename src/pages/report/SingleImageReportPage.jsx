@@ -362,11 +362,6 @@ const SingleImageReportPage = () => {
           >
             返回汇总报告
           </Button>
-          <Button
-            onClick={() => navigate(`/analysis/${projectId}/global-report`)}
-          >
-            查看汇总报告
-          </Button>
           <Title level={4} style={{ margin: 0 }}>单张图片分析报告</Title>
         </div>
         

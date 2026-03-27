@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PageLayout from "../components/layout/PageLayout";
 // 登录页面
 import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
 // 数据集模块页面
 import GroupListPage from "../pages/dataset/GroupListPage";
 import DatasetListPage from "../pages/dataset/DatasetListPage";
@@ -30,6 +31,11 @@ const routesConfig = [
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  // 注册页面
+  {
+    path: "/register",
+    element: <RegisterPage />,
   },
   // 主布局路由
   {

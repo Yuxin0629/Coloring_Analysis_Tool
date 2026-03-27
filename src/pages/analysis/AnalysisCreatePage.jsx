@@ -21,6 +21,7 @@ import { pointInPolygon } from '../../utils/hitTest';
 import { datasetApi } from '../../api/dataset';
 import { templateApi } from '../../api/template';
 import { analysisApi } from '../../api/analysis';
+import { toolApi } from '../../api/tool';
 
 const { Title, Text } = Typography;
 
@@ -84,8 +85,7 @@ const AnalysisCreatePage = () => {
         setTemplateImages(templates.map(t => ({
           id: t.id,
           name: t.name,
-          url: t.url || templateImage,
-          description: t.description || '系统模板'
+          templateImage: t.templateImage || templateImage
         })));
       }
     } catch (error) {
@@ -322,8 +322,7 @@ const AnalysisCreatePage = () => {
     const newTemplate = {
       id: `tmpl-${Date.now()}`,
       name: file.name.replace(/\.[^/.]+$/, ''),
-      url: templateImage,
-      description: '用户上传模板'
+      templateImage: templateImage
     };
     setTemplateImages([...templateImages, newTemplate]);
     setSelectedTemplateImage(newTemplate);
@@ -385,50 +384,66 @@ const AnalysisCreatePage = () => {
     setIsCorrecting(true);
     setCorrectionProgress(0);
     
-    const correctionData = {
-      datasets: selectedDatasets,
-      template: selectedTemplateImage,
-      timestamp: Date.now()
-    };
-    
-    console.log('发送矫正数据到后端:', correctionData);
+    const totalImages = selectedDatasets.reduce((sum, ds) => sum + ds.imageCount, 0);
     message.info('正在发送数据到后端进行矫正...');
     
-    const totalImages = selectedDatasets.reduce((sum, ds) => sum + ds.imageCount, 0);
-    const mockCorrected = [];
-    let imgIndex = 1;
-    selectedDatasets.forEach(ds => {
-      for (let i = 0; i < Math.min(ds.imageCount, 8); i++) {
-        mockCorrected.push({
-          id: `corrected-${imgIndex++}`,
-          name: `${ds.name}_图片${i + 1}`,
-          corrected: templateImage,
-          dataset: ds.name,
-          status: 'pending'
-        });
-      }
-    });
-    setCorrectedImages(mockCorrected);
-
-    const interval = setInterval(() => {
-      setCorrectionProgress(prev => {
-        const newProgress = prev + Math.floor(Math.random() * 8) + 5;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsCorrecting(false);
-            setCorrectionComplete(true);
-            setCorrectedImages(prev => prev.map(img => ({ ...img, status: 'completed' })));
-            message.success(`后端矫正完成，共处理 ${totalImages} 张图片`);
-          }, 500);
-          return 100;
+    try {
+      // 准备图片列表用于矫正
+      const imagesForCorrection = [];
+      selectedDatasets.forEach(ds => {
+        for (let i = 0; i < Math.min(ds.imageCount, 8); i++) {
+          imagesForCorrection.push({
+            id: `corrected-${i}`,
+            name: `${ds.name}_图片${i + 1}`,
+            dataset: ds.name,
+            status: 'pending'
+          });
         }
-        setCorrectedImages(prev => prev.map((img, idx) =>
-          idx < (newProgress / 100) * prev.length ? { ...img, status: 'completed' } : img
-        ));
-        return newProgress;
       });
-    }, 300);
+      setCorrectedImages(imagesForCorrection);
+      
+      // 调用API对每个数据集的图片进行矫正
+      let processedCount = 0;
+      for (const ds of selectedDatasets) {
+        // 获取数据集图片
+        const images = await datasetApi.getDatasetImages(ds.id);
+        
+        for (const img of images || []) {
+          // 创建FormData，包含模板(model)和目标图片(image)
+          const formData = new FormData();
+          
+          // 将模板图片URL转换为文件（如果必要）
+          const templateResponse = await fetch(selectedTemplateImage.templateImage);
+          const templateBlob = await templateResponse.blob();
+          formData.append('model', templateBlob, 'template.png');
+          
+          // 将目标图片URL转换为文件
+          const imageResponse = await fetch(img.url);
+          const imageBlob = await imageResponse.blob();
+          formData.append('image', imageBlob, img.name);
+          
+          // 调用对齐API
+          const result = await toolApi.alignImage(formData);
+          
+          // 更新矫正后的图片
+          setCorrectedImages(prev => prev.map(item => 
+            item.name === `${ds.name}_${img.name}` 
+              ? { ...item, corrected: result.correctedUrl || result.url, status: 'completed' }
+              : item
+          ));
+          
+          processedCount++;
+          setCorrectionProgress(Math.round((processedCount / totalImages) * 100));
+        }
+      }
+      
+      setIsCorrecting(false);
+      setCorrectionComplete(true);
+      message.success(`后端矫正完成，共处理 ${totalImages} 张图片`);
+    } catch (error) {
+      message.error('图像矫正失败：' + (error.message || '未知错误'));
+      setIsCorrecting(false);
+    }
   };
 
   // ==================== 步骤3: 区域定义 ====================
@@ -441,7 +456,7 @@ const AnalysisCreatePage = () => {
         edgeImgRef.current = img;
         setEdgeImgSize({ w: img.naturalWidth, h: img.naturalHeight });
       };
-      img.src = selectedTemplateImage.url;
+      img.src = selectedTemplateImage.templateImage;
     }
   }, [currentStep, selectedTemplateImage]);
 
@@ -604,13 +619,23 @@ const AnalysisCreatePage = () => {
 
   const handleLeave = () => setHover(null);
 
-  // 自动检测区域 - 参照 EdgeDetectionPage (返回多边形区域)
-  const handleAutoDetectRegions = () => {
+  // 自动检测区域 - 使用Canny边缘检测API
+  const handleAutoDetectRegions = async () => {
     setIsDetecting(true);
     setRegions([]);
-    setTimeout(() => {
-      // 模拟后端返回的多边形区域数据
-      const detectedRegions = [
+    
+    try {
+      // 获取模板图片并转换为FormData
+      const formData = new FormData();
+      const templateResponse = await fetch(selectedTemplateImage.templateImage);
+      const templateBlob = await templateResponse.blob();
+      formData.append('file', templateBlob, 'template.png');
+      
+      // 调用Canny边缘检测API（不配置threshold参数）
+      const result = await toolApi.cannyEdgeDetection(formData);
+      
+      // 使用API返回的区域数据或默认数据
+      const detectedRegions = result.regions || [
         {
           regionId: 'region1',
           name: '区域1',
@@ -649,10 +674,14 @@ const AnalysisCreatePage = () => {
           color: '#faad14',
         },
       ];
+      
       setRegions(detectedRegions);
-      setIsDetecting(false);
       message.success(`自动检测到 ${detectedRegions.length} 个区域`);
-    }, 1500);
+    } catch (error) {
+      message.error('区域检测失败：' + (error.message || '未知错误'));
+    } finally {
+      setIsDetecting(false);
+    }
   };
 
   const toggleDrawing = () => {
@@ -994,7 +1023,7 @@ const AnalysisCreatePage = () => {
                   }}
                 >
                   <img 
-                    src={template.url} 
+                    src={template.templateImage} 
                     alt={template.name} 
                     style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 6 }} 
                   />
@@ -1003,7 +1032,6 @@ const AnalysisCreatePage = () => {
                       <Text strong style={{ fontSize: 14 }}>{template.name}</Text>
                       {isSelected && <Badge color={colors.success} />}
                     </div>
-                    <Text type="secondary" style={{ fontSize: 12 }}>{template.description}</Text>
                   </div>
                 </div>
               );
@@ -1014,7 +1042,7 @@ const AnalysisCreatePage = () => {
             <div style={{ marginTop: 20, padding: 16, background: colors.neutral, borderRadius: 8 }}>
               <Text strong style={{ fontSize: 13, marginBottom: 12, display: 'block' }}>已选模板预览</Text>
               <img 
-                src={selectedTemplateImage.url} 
+                src={selectedTemplateImage.templateImage} 
                 alt={selectedTemplateImage.name} 
                 style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 6 }} 
               />

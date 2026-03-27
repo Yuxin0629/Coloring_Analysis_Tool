@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card, Typography, Tag, Input, Modal, message, Button, Table, Badge,
-  Dropdown, Space, Tooltip, Empty, Progress, Form, Upload, Select
+import { 
+  Card, Typography, Button, Table, Tag, Badge,
+  Input, Space, Dropdown, Modal, Form, Upload, Empty, Progress, message
 } from 'antd';
 import {
   PlusOutlined, DeleteOutlined, SearchOutlined,
@@ -145,56 +145,22 @@ const initialTemplates = [
   {
     id: 1,
     name: '精细动作能力分析模板',
-    description: '评估儿童涂色过程中精细动作控制能力，包括握笔姿势、线条稳定性、手眼协调等维度',
-    uploadTime: '2025-03-10 14:30:00',
-    uploadBy: '张老师',
     templateImage: '/src/assets/template.png',
-    analysisMethods: [
-      { name: '线条粗细', enabled: true, description: '检测涂色线条的粗细均匀程度' },
-      { name: '是否出界', enabled: true, description: '判断涂色是否超出边界线' },
-      { name: '线条稳定性', enabled: true, description: '评估线条的稳定性和连续性' }
-    ]
   },
   {
     id: 2,
     name: '色彩认知能力模板',
-    description: '分析儿童对色彩的认知、运用和搭配能力，适用于3-6岁儿童发展阶段评估',
-    uploadTime: '2025-03-08 09:15:00',
-    uploadBy: '李老师',
     templateImage: '/assets/templates/template2.png',
-    analysisMethods: [
-      { name: '颜色分布', enabled: true, description: '统计涂色中各种颜色的分布情况' },
-      { name: '色彩丰富度', enabled: true, description: '评估使用颜色的种类数量' },
-      { name: '颜色搭配', enabled: true, description: '分析颜色搭配的协调性' }
-    ]
   },
   {
     id: 3,
     name: '涂色完成度分析模板',
-    description: '评估涂色作品的完成程度和质量，包括涂色面积和覆盖率',
-    uploadTime: '2025-02-28 16:45:00',
-    uploadBy: '王老师',
     templateImage: '/assets/templates/template3.png',
-    analysisMethods: [
-      { name: '涂色面积', enabled: true, description: '计算实际涂色面积占比' },
-      { name: '覆盖率', enabled: true, description: '评估涂色区域的覆盖完整度' },
-      { name: '是否出界', enabled: true, description: '判断涂色是否超出边界' }
-    ]
   },
   {
     id: 4,
     name: '综合发展评估模板',
-    description: '综合评价儿童在涂色活动中的多方面发展能力，包括精细动作、色彩认知、注意力等',
-    uploadTime: '2025-02-15 11:20:00',
-    uploadBy: '赵老师',
     templateImage: '/assets/templates/template4.png',
-    analysisMethods: [
-      { name: '颜色分布', enabled: true, description: '统计涂色中各种颜色的分布情况' },
-      { name: '涂色面积', enabled: true, description: '计算实际涂色面积占比' },
-      { name: '线条粗细', enabled: true, description: '检测涂色线条的粗细均匀程度' },
-      { name: '是否出界', enabled: true, description: '判断涂色是否超出边界线' },
-      { name: '注意力集中度', enabled: true, description: '评估涂色过程中的注意力表现' }
-    ]
   }
 ];
 
@@ -541,33 +507,10 @@ const AnalysisPage = () => {
     // 模拟上传延迟
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // 获取选中的分析方法
-    const selectedMethods = values.analysisMethods || [];
-    const allMethods = [
-      { name: '颜色分布', description: '统计涂色中各种颜色的分布情况' },
-      { name: '涂色面积', description: '计算实际涂色面积占比' },
-      { name: '线条粗细', description: '检测涂色线条的粗细均匀程度' },
-      { name: '是否出界', description: '判断涂色是否超出边界线' },
-      { name: '线条稳定性', description: '评估线条的稳定性和连续性' },
-      { name: '色彩丰富度', description: '评估使用颜色的种类数量' },
-      { name: '颜色搭配', description: '分析颜色搭配的协调性' },
-      { name: '覆盖率', description: '评估涂色区域的覆盖完整度' },
-      { name: '注意力集中度', description: '评估涂色过程中的注意力表现' }
-    ];
-    
-    const analysisMethods = allMethods.map(method => ({
-      ...method,
-      enabled: selectedMethods.includes(method.name)
-    }));
-    
     const newTemplate = {
       id: Date.now(),
       name: values.name,
-      description: values.description || '暂无描述',
       templateImage: values.templateImage?.fileList?.[0] ? URL.createObjectURL(values.templateImage.fileList[0].originFileObj) : null,
-      uploadTime: new Date().toLocaleString(),
-      uploadBy: '当前用户',
-      analysisMethods: analysisMethods
     };
     
     setTemplates([newTemplate, ...templates]);
@@ -740,16 +683,10 @@ const AnalysisPage = () => {
       title: '模板名称',
       dataIndex: 'name',
       key: 'name',
-      width: 280,
-      render: (text, record) => (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FileOutlined style={{ color: colors.primary }} />
-            <Text strong style={{ color: colors.textPrimary }}>{text}</Text>
-          </div>
-          <Text type="secondary" style={{ fontSize: 12 }} ellipsis={{ tooltip: record.description }}>
-            {record.description}
-          </Text>
+      render: (text) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileOutlined style={{ color: colors.primary }} />
+          <Text strong style={{ color: colors.textPrimary }}>{text}</Text>
         </div>
       )
     },
@@ -757,11 +694,11 @@ const AnalysisPage = () => {
       title: '模板照片',
       dataIndex: 'templateImage',
       key: 'templateImage',
-      width: 100,
+      width: 120,
       render: (image) => (
         <div style={{ 
-          width: 60, 
-          height: 60, 
+          width: 80, 
+          height: 80, 
           background: colors.neutralLight,
           borderRadius: 4,
           display: 'flex',
@@ -780,41 +717,6 @@ const AnalysisPage = () => {
           )}
         </div>
       )
-    },
-    {
-      title: '分析方法',
-      dataIndex: 'analysisMethods',
-      key: 'analysisMethods',
-      width: 200,
-      render: (methods) => (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {methods?.filter(m => m.enabled).slice(0, 3).map((method, index) => (
-            <Tag key={index} size="small" color="blue">{method.name}</Tag>
-          ))}
-          {methods?.filter(m => m.enabled).length > 3 && (
-            <Tag size="small">+{methods.filter(m => m.enabled).length - 3}</Tag>
-          )}
-        </div>
-      )
-    },
-    {
-      title: '上传时间',
-      dataIndex: 'uploadTime',
-      key: 'uploadTime',
-      width: 160,
-      render: (time) => (
-        <Space>
-          <ClockCircleOutlined style={{ color: colors.textTertiary }} />
-          <Text style={{ fontSize: 13 }}>{time}</Text>
-        </Space>
-      )
-    },
-    {
-      title: '上传者',
-      dataIndex: 'uploadBy',
-      key: 'uploadBy',
-      width: 100,
-      render: (uploadBy) => <Tag color="green">{uploadBy}</Tag>
     },
     {
       title: '操作',
@@ -1270,7 +1172,7 @@ const AnalysisPage = () => {
             {/* 右侧搜索和操作 */}
             <Space size={12}>
               <Input
-                placeholder="搜索模板名称、描述、上传者..."
+                placeholder="搜索模板名称..."
                 prefix={<SearchOutlined style={{ color: colors.textTertiary }} />}
                 value={templateSearchValue}
                 onChange={(e) => setTemplateSearchValue(e.target.value)}
@@ -1299,12 +1201,6 @@ const AnalysisPage = () => {
               <Text type="secondary" style={{ fontSize: 13 }}>总模板数</Text>
               <div style={{ fontSize: 20, fontWeight: 600, color: colors.textPrimary }}>
                 {templates.length}
-              </div>
-            </div>
-            <div>
-              <Text type="secondary" style={{ fontSize: 13 }}>分析方法数</Text>
-              <div style={{ fontSize: 20, fontWeight: 600, color: colors.primary }}>
-                {templates.reduce((sum, t) => sum + (t.analysisMethods?.filter(m => m.enabled).length || 0), 0)}
               </div>
             </div>
           </Space>
@@ -1376,17 +1272,6 @@ const AnalysisPage = () => {
           </Form.Item>
           
           <Form.Item
-            name="description"
-            label="模板描述"
-            rules={[{ required: true, message: '请输入模板描述' }]}
-          >
-            <Input.TextArea 
-              placeholder="描述该模板的功能和适用场景..."
-              rows={3}
-            />
-          </Form.Item>
-          
-          <Form.Item
             name="templateImage"
             label="模板照片"
             rules={[{ required: true, message: '请上传模板照片' }]}
@@ -1407,29 +1292,6 @@ const AnalysisPage = () => {
                 支持 .jpg, .jpeg, .png, .webp 格式的图片文件
               </p>
             </Upload.Dragger>
-          </Form.Item>
-          
-          <Form.Item
-            name="analysisMethods"
-            label="选择分析方法"
-            rules={[{ required: true, message: '请至少选择一种分析方法' }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择要启用的分析方法"
-              style={{ width: '100%' }}
-              options={[
-                { label: '颜色分布', value: '颜色分布', description: '统计涂色中各种颜色的分布情况' },
-                { label: '涂色面积', value: '涂色面积', description: '计算实际涂色面积占比' },
-                { label: '线条粗细', value: '线条粗细', description: '检测涂色线条的粗细均匀程度' },
-                { label: '是否出界', value: '是否出界', description: '判断涂色是否超出边界线' },
-                { label: '线条稳定性', value: '线条稳定性', description: '评估线条的稳定性和连续性' },
-                { label: '色彩丰富度', value: '色彩丰富度', description: '评估使用颜色的种类数量' },
-                { label: '颜色搭配', value: '颜色搭配', description: '分析颜色搭配的协调性' },
-                { label: '覆盖率', value: '覆盖率', description: '评估涂色区域的覆盖完整度' },
-                { label: '注意力集中度', value: '注意力集中度', description: '评估涂色过程中的注意力表现' }
-              ]}
-            />
           </Form.Item>
           
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
@@ -1463,97 +1325,33 @@ const AnalysisPage = () => {
             关闭
           </Button>
         ]}
-        width={800}
+        width={600}
       >
         {currentTemplate && (
-          <div style={{ padding: '16px 0' }}>
-            {/* 模板照片预览 */}
-            <Card size="small" style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', gap: 20 }}>
-                <div style={{ flex: '0 0 200px' }}>
-                  <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 8 }}>
-                    模板照片：
-                  </Text>
-                  <div style={{ 
-                    width: 200, 
-                    height: 200, 
-                    background: colors.neutralLight,
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden'
-                  }}>
-                    {currentTemplate.templateImage ? (
-                      <img 
-                        src={currentTemplate.templateImage} 
-                        alt="模板照片"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <FileOutlined style={{ fontSize: 48, color: colors.textTertiary }} />
-                    )}
-                  </div>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: 16 }}>
-                    <Text type="secondary" style={{ fontSize: 13 }}>模板名称：</Text>
-                    <div>
-                      <FileOutlined style={{ color: colors.primary, marginRight: 8 }} />
-                      <Text strong>{currentTemplate.name}</Text>
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: 16 }}>
-                    <Text type="secondary" style={{ fontSize: 13 }}>上传时间：</Text>
-                    <div><Text>{currentTemplate.uploadTime}</Text></div>
-                  </div>
-                  <div>
-                    <Text type="secondary" style={{ fontSize: 13 }}>上传者：</Text>
-                    <div><Tag color="green">{currentTemplate.uploadBy}</Tag></div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            
-            {/* 可用分析方法 */}
+          <div style={{ padding: '16px 0', textAlign: 'center' }}>
             <div style={{ marginBottom: 16 }}>
-              <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 12 }}>
-                可用分析方法：
-              </Text>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                {currentTemplate.analysisMethods?.map((method, index) => (
-                  <Tag 
-                    key={index}
-                    color={method.enabled ? 'blue' : 'default'}
-                    style={{ 
-                      padding: '8px 12px', 
-                      fontSize: 14,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6
-                    }}
-                  >
-                    <CheckCircleOutlined style={{ color: method.enabled ? colors.success : colors.textTertiary }} />
-                    <span>{method.name}</span>
-                    {method.description && (
-                      <Tooltip title={method.description}>
-                        <InfoCircleOutlined style={{ color: colors.textTertiary, fontSize: 12 }} />
-                      </Tooltip>
-                    )}
-                  </Tag>
-                )) || (
-                  <Text type="secondary">暂无分析方法配置</Text>
-                )}
-              </div>
+              <Text strong style={{ fontSize: 18 }}>{currentTemplate.name}</Text>
             </div>
-            
-            <div>
-              <Text type="secondary" style={{ fontSize: 13, display: 'block', marginBottom: 8 }}>
-                模板描述：
-              </Text>
-              <Card size="small" style={{ background: colors.neutralLight }}>
-                <Text>{currentTemplate.description}</Text>
-              </Card>
+            <div style={{ 
+              width: 300, 
+              height: 300, 
+              margin: '0 auto',
+              background: colors.neutralLight,
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+              {currentTemplate.templateImage ? (
+                <img 
+                  src={currentTemplate.templateImage} 
+                  alt="模板照片"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <FileOutlined style={{ fontSize: 64, color: colors.textTertiary }} />
+              )}
             </div>
           </div>
         )}

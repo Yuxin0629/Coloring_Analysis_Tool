@@ -5,13 +5,10 @@ import apiClient, { uploadClient } from './index';
  */
 export const datasetApi = {
   /**
-   * 获取数据集列表
+   * 查询数据集列表
    * @param {Object} params - 查询参数
-   * @param {number} params.groupId - 分组ID
-   * @param {string} params.year - 年份
-   * @param {string} params.keyword - 搜索关键词
-   * @param {string} params.sortField - 排序字段
-   * @param {string} params.sortOrder - 排序方向
+   * @param {string} params.groupId - 分组ID
+   * @param {string} params.scene - 场景
    */
   getDatasets: (params = {}) => {
     return apiClient.get('/datasets', { params });
@@ -22,76 +19,74 @@ export const datasetApi = {
    * @param {Object} data - 数据集数据
    * @param {string} data.name - 名称
    * @param {string} data.description - 描述
-   * @param {string} data.scenario - 场景
-   * @param {number[]} data.groupIds - 所属分组ID列表
+   * @param {string} data.ownerId - 所有者ID
+   * @param {string} data.scene - 场景
+   * @param {string} data.groupId - 分组ID
    */
   createDataset: (data) => {
-    return apiClient.post('/datasets', data);
+    const { name, description, ownerId, scene, groupId } = data;
+    return apiClient.post('/datasets', { name, description, ownerId, scene, groupId });
   },
 
   /**
-   * 更新数据集
-   * @param {number} id - 数据集ID
-   * @param {Object} data - 更新数据
+   * 查询数据集详情
+   * @param {string} datasetId - 数据集ID
    */
-  updateDataset: (id, data) => {
-    return apiClient.put(`/datasets/${id}`, data);
+  getDatasetDetail: (datasetId) => {
+    return apiClient.get(`/datasets/${datasetId}`);
   },
 
   /**
-   * 删除数据集
-   * @param {number} id - 数据集ID
-   */
-  deleteDataset: (id) => {
-    return apiClient.delete(`/datasets/${id}`);
-  },
-
-  /**
-   * 批量删除数据集
-   * @param {number[]} ids - 数据集ID列表
-   */
-  batchDeleteDatasets: (ids) => {
-    return apiClient.post('/datasets/batch-delete', { ids });
-  },
-
-  /**
-   * 获取数据集详情
-   * @param {number} id - 数据集ID
-   */
-  getDatasetDetail: (id) => {
-    return apiClient.get(`/datasets/${id}`);
-  },
-
-  /**
-   * 上传图片到数据集
-   * @param {number} datasetId - 数据集ID
-   * @param {FormData} formData - 包含文件的 FormData
-   */
-  uploadImages: (datasetId, formData) => {
-    return uploadClient.post(`/datasets/${datasetId}/images`, formData);
-  },
-
-  /**
-   * 获取数据集的图片列表
-   * @param {number} datasetId - 数据集ID
+   * 查询数据集图片列表
+   * @param {string} datasetId - 数据集ID
    */
   getDatasetImages: (datasetId) => {
     return apiClient.get(`/datasets/${datasetId}/images`);
   },
 
   /**
-   * 删除数据集中的图片
-   * @param {number} datasetId - 数据集ID
-   * @param {number} imageId - 图片ID
+   * 上传数据集图片
+   * @param {string} datasetId - 数据集ID
+   * @param {FormData} formData - 包含图片文件的 FormData
    */
-  deleteImage: (datasetId, imageId) => {
+  uploadDatasetImages: (datasetId, formData) => {
+    return uploadClient.post(`/datasets/${datasetId}/images`, formData);
+  },
+
+  /**
+   * 更新数据集
+   * @param {string} datasetId - 数据集ID
+   * @param {Object} data - 更新数据
+   * @param {string} data.name - 名称
+   * @param {string} data.description - 描述
+   * @param {string} data.scene - 场景
+   */
+  updateDataset: (datasetId, data) => {
+    const { name, description, scene } = data;
+    return apiClient.put(`/datasets/${datasetId}`, { name, description, scene });
+  },
+
+  /**
+   * 删除数据集
+   * @param {string} datasetId - 数据集ID
+   */
+  deleteDataset: (datasetId) => {
+    return apiClient.delete(`/datasets/${datasetId}`);
+  },
+
+  /**
+   * 删除数据集图片
+   * @param {string} datasetId - 数据集ID
+   * @param {string} imageId - 图片ID
+   */
+  deleteDatasetImage: (datasetId, imageId) => {
     return apiClient.delete(`/datasets/${datasetId}/images/${imageId}`);
   },
 
   /**
-   * 批量删除图片
-   * @param {number} datasetId - 数据集ID
-   * @param {number[]} imageIds - 图片ID列表
+   * 批量删除数据集图片
+   * @param {string} datasetId - 数据集ID
+   * @param {string[]} imageIds - 图片ID数组
    */
   batchDeleteImages: (datasetId, imageIds) => {
     return apiClient.post(`/datasets/${datasetId}/images/batch-delete`, { imageIds });

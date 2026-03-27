@@ -17,28 +17,25 @@ export const templateApi = {
 
   /**
    * 获取模板详情
-   * @param {number} id - 模板ID
+   * @param {number|string} id - 模板ID
    */
   getTemplateDetail: (id) => {
     return apiClient.get(`/templates/${id}`);
   },
 
   /**
-   * 上传新模板
-   * @param {FormData} formData - 包含模板文件和信息的 FormData
-   * @param {string} formData.name - 模板名称
-   * @param {string} formData.description - 模板描述
-   * @param {File} formData.templateImage - 模板图片文件
-   * @param {string} formData.analysisMethods - 分析方法(JSON字符串)
+   * 创建模板
+   * @param {Object} data - 模板数据
+   * @param {string} data.name - 模板名称
    */
-  uploadTemplate: (formData) => {
-    return uploadClient.post('/templates', formData);
+  createTemplate: (data) => {
+    return apiClient.post('/templates', data);
   },
 
   /**
-   * 更新模板信息
-   * @param {number} id - 模板ID
-   * @param {Object} data - 更新数据
+   * 更新模板
+   * @param {number|string} id - 模板ID
+   * @param {Object} data - 模板数据
    */
   updateTemplate: (id, data) => {
     return apiClient.put(`/templates/${id}`, data);
@@ -46,18 +43,19 @@ export const templateApi = {
 
   /**
    * 删除模板
-   * @param {number} id - 模板ID
+   * @param {number|string} id - 模板ID
    */
   deleteTemplate: (id) => {
     return apiClient.delete(`/templates/${id}`);
   },
 
   /**
-   * 批量删除模板
-   * @param {number[]} ids - 模板ID列表
+   * 上传模板图片
+   * @param {number|string} id - 模板ID
+   * @param {FormData} formData - 包含图片文件的FormData
    */
-  batchDeleteTemplates: (ids) => {
-    return apiClient.post('/templates/batch-delete', { ids });
+  uploadTemplateImage: (id, formData) => {
+    return uploadClient.post(`/templates/${id}/image`, formData);
   }
 };
 

@@ -9,41 +9,21 @@ export const authApi = {
    * @param {Object} credentials - 登录凭证
    * @param {string} credentials.username - 用户名
    * @param {string} credentials.password - 密码
-   * @param {boolean} credentials.rememberMe - 是否记住我
    */
   login: (credentials) => {
-    return apiClient.post('/auth/login', credentials);
+    const { username, password } = credentials;
+    return apiClient.post('/auth/login', { username, password });
   },
 
   /**
-   * 用户登出
+   * 用户注册
+   * @param {Object} data - 注册信息
+   * @param {string} data.username - 用户名
+   * @param {string} data.password - 密码
    */
-  logout: () => {
-    return apiClient.post('/auth/logout');
-  },
-
-  /**
-   * 获取当前用户信息
-   */
-  getCurrentUser: () => {
-    return apiClient.get('/auth/current');
-  },
-
-  /**
-   * 刷新令牌
-   */
-  refreshToken: () => {
-    return apiClient.post('/auth/refresh');
-  },
-
-  /**
-   * 修改密码
-   * @param {Object} data - 密码数据
-   * @param {string} data.oldPassword - 旧密码
-   * @param {string} data.newPassword - 新密码
-   */
-  changePassword: (data) => {
-    return apiClient.post('/auth/change-password', data);
+  register: (data) => {
+    const { username, password } = data;
+    return apiClient.post('/auth/register', { username, password });
   }
 };
 

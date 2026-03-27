@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
 import { 
   EyeOutlined, 
@@ -6,106 +6,42 @@ import {
   UserOutlined, 
   LockOutlined,
   SafetyCertificateOutlined,
-  LoginOutlined
+  UserAddOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth';
 
 const { Title, Text, Paragraph } = Typography;
 
-// 默认测试账号（仅用于前端开发测试）
-const DEFAULT_CREDENTIALS = {
-  username: 'admin',
-  password: '123456'
-};
-
-// 会话管理常量
-const SESSION_KEY = 'user_session';
-const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24小时有效期
-
-const LoginPage = () => {
+const RegisterPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [form] = Form.useForm();
 
-  // 检查已有会话
-  useEffect(() => {
-    const session = localStorage.getItem(SESSION_KEY);
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        if (parsed.expiresAt > Date.now()) {
-          // 会话有效，自动跳转
-          navigate('/dataset');
-        } else {
-          // 会话过期，清除存储
-          localStorage.removeItem(SESSION_KEY);
-          message.warning('会话已过期，请重新登录');
-        }
-      } catch (e) {
-        localStorage.removeItem(SESSION_KEY);
-      }
-    }
-  }, [navigate]);
-
-  const handleLogin = async (values) => {
+  const handleRegister = async (values) => {
     setLoading(true);
     try {
-      // 调用登录API
-      const response = await authApi.login({
+      // 调用注册API
+      await authApi.register({
         username: values.username,
         password: values.password
       });
       
-      // 假设后端返回格式: { token, userId, username }
-      const session = {
-        token: response.token || `mock_token_${Date.now()}`,
-        userId: response.userId || '1',
-        username: response.username || values.username,
-        loginTime: new Date().toISOString(),
-        expiresAt: Date.now() + SESSION_DURATION
-      };
-      
-      // 存储会话
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      
-      message.success('登录成功，欢迎回来！');
-      navigate('/dataset');
+      message.success('注册成功，请登录');
+      navigate('/login');
     } catch (error) {
-      // 后端未就绪时，使用本地 mock 登录（仅用于开发测试）
-      if (values.username === DEFAULT_CREDENTIALS.username && 
-          values.password === DEFAULT_CREDENTIALS.password) {
-        const session = {
-          token: `mock_token_${Date.now()}`,
-          userId: '1',
-          username: values.username,
-          loginTime: new Date().toISOString(),
-          expiresAt: Date.now() + SESSION_DURATION
-        };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-        message.success('Mock 登录成功（后端未连接）');
-        navigate('/dataset');
-      } else {
-        // 错误已在apiClient拦截器中处理
-        console.error('登录失败:', error);
-      }
+      // 错误已在apiClient拦截器中处理
+      console.error('注册失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRegister = () => {
-    navigate('/register');
-  };
-
-  // 填充默认测试账号
-  const fillDefaultCredentials = () => {
-    form.setFieldsValue({
-      username: DEFAULT_CREDENTIALS.username,
-      password: DEFAULT_CREDENTIALS.password
-    });
-    message.info('已填充默认测试账号');
+  const handleBackToLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -141,7 +77,7 @@ const LoginPage = () => {
         filter: 'blur(80px)'
       }} />
 
-      {/* 登录卡片容器 */}
+      {/* 注册卡片容器 */}
       <Card 
         style={{
           width: 1000,
@@ -199,7 +135,8 @@ const LoginPage = () => {
               marginBottom: 32
             }}>
               专业的涂色图像分析工具<br/>
-                      </Paragraph>
+              助力儿童涂色评估与教学
+            </Paragraph>
 
             {/* 装饰分隔线 */}
             <div style={{
@@ -231,26 +168,9 @@ const LoginPage = () => {
                 <Text style={{ color: 'rgba(255,255,255,0.9)' }}>可视化数据报告</Text>
               </div>
             </Space>
-
-            {/* 默认账号提示 */}
-            <div style={{
-              position: 'absolute',
-              bottom: 24,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              textAlign: 'center'
-            }}>
-              <Text style={{ 
-                color: 'rgba(255,255,255,0.6)', 
-                fontSize: 12,
-                cursor: 'pointer'
-              }} onClick={fillDefaultCredentials}>
-                点击此处填充默认测试账号
-              </Text>
-            </div>
           </div>
 
-          {/* 右侧：登录表单区域 */}
+          {/* 右侧：注册表单区域 */}
           <div style={{
             width: '55%',
             display: 'flex',
@@ -259,27 +179,47 @@ const LoginPage = () => {
             padding: '60px',
             backgroundColor: '#fff'
           }}>
-            {/* 登录类型标签 */}
+            {/* 返回登录按钮 */}
+            <Button
+              type="link"
+              icon={<ArrowLeftOutlined />}
+              onClick={handleBackToLogin}
+              style={{
+                position: 'absolute',
+                top: 24,
+                left: 24,
+                padding: 0,
+                color: '#667eea'
+              }}
+            >
+              返回登录
+            </Button>
+
+            {/* 注册类型标签 */}
             <div style={{ marginBottom: 40 }}>
               <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
-                <LoginOutlined style={{ marginRight: 8, color: '#667eea' }} />
-                欢迎登录
+                <UserAddOutlined style={{ marginRight: 8, color: '#667eea' }} />
+                用户注册
               </Title>
-              <Text type="secondary">请输入您的账号和密码继续访问</Text>
+              <Text type="secondary">创建新账号以开始使用</Text>
             </div>
 
-            {/* 登录表单 */}
+            {/* 注册表单 */}
             <Form
               form={form}
-              name="login"
-              onFinish={handleLogin}
+              name="register"
+              onFinish={handleRegister}
               autoComplete="off"
               style={{ width: '100%' }}
             >
               {/* 账号输入框 */}
               <Form.Item
                 name="username"
-                rules={[{ required: true, message: '请输入账号' }]}
+                rules={[
+                  { required: true, message: '请输入账号' },
+                  { min: 3, message: '账号长度至少3位' },
+                  { max: 20, message: '账号长度最多20位' }
+                ]}
               >
                 <Input
                   prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
@@ -295,7 +235,10 @@ const LoginPage = () => {
               {/* 密码输入框 */}
               <Form.Item
                 name="password"
-                rules={[{ required: true, message: '请输入密码' }]}
+                rules={[
+                  { required: true, message: '请输入密码' },
+                  { min: 6, message: '密码长度至少6位' }
+                ]}
               >
                 <Input
                   prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
@@ -317,7 +260,43 @@ const LoginPage = () => {
                 />
               </Form.Item>
 
-              {/* 登录按钮 */}
+              {/* 确认密码输入框 */}
+              <Form.Item
+                name="confirmPassword"
+                dependencies={['password']}
+                rules={[
+                  { required: true, message: '请确认密码' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('password') === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('两次输入的密码不一致'));
+                    },
+                  }),
+                ]}
+              >
+                <Input
+                  prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
+                  type={confirmPasswordVisible ? 'text' : 'password'}
+                  placeholder="请确认密码"
+                  size="large"
+                  suffix={
+                    <span 
+                      onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                      style={{ cursor: 'pointer', color: '#999' }}
+                    >
+                      {confirmPasswordVisible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                    </span>
+                  }
+                  style={{
+                    borderRadius: 8,
+                    height: 48
+                  }}
+                />
+              </Form.Item>
+
+              {/* 注册按钮 */}
               <Form.Item style={{ marginBottom: 16 }}>
                 <Button
                   type="primary"
@@ -335,36 +314,22 @@ const LoginPage = () => {
                     boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
                   }}
                 >
-                  登 录
-                </Button>
-              </Form.Item>
-
-              {/* 注册按钮 */}
-              <Form.Item style={{ marginBottom: 16 }}>
-                <Button
-                  size="large"
-                  block
-                  onClick={handleRegister}
-                  style={{
-                    height: 48,
-                    borderRadius: 8,
-                    fontSize: 16,
-                    fontWeight: 500
-                  }}
-                >
                   注 册
                 </Button>
               </Form.Item>
 
-              {/* 忘记密码链接 */}
+              {/* 已有账号提示 */}
               <div style={{ textAlign: 'center' }}>
-                <Button 
-                  type="link" 
-                  onClick={() => message.info('忘记密码功能开发中，请联系管理员')}
-                  style={{ fontSize: 13 }}
-                >
-                  忘记密码？
-                </Button>
+                <Text type="secondary" style={{ fontSize: 13 }}>
+                  已有账号？
+                  <Button 
+                    type="link" 
+                    onClick={handleBackToLogin}
+                    style={{ padding: '0 4px', fontSize: 13 }}
+                  >
+                    立即登录
+                  </Button>
+                </Text>
               </div>
             </Form>
 
@@ -385,4 +350,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

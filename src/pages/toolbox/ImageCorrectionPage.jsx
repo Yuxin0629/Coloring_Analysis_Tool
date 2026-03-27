@@ -5,7 +5,9 @@ import {
   UploadOutlined, DownloadOutlined, UndoOutlined,
   FileImageOutlined, PlusOutlined, CheckCircleOutlined
 } from "@ant-design/icons";
-import { Button, Card, Space, Radio, Typography, message, Upload, Slider, Row, Col, Tag, Modal, List } from "antd";
+import { Button, Card, Space, Radio, Typography, message, Upload, Slider, Row, Col, Tag, Modal, List, Form, Input, Empty } from "antd";
+import { SearchOutlined, FileOutlined } from "@ant-design/icons";
+import { templateApi } from "../../api/template";
 
 const { Title, Text } = Typography;
 
@@ -55,14 +57,15 @@ export default function ImageCorrectionPage() {
   
   // 模板自动矫正相关状态
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
-  const [existingTemplates] = useState([
-    { id: "template-1", name: "模板1", thumbnail: "📄", size: "210x297mm" },
-    { id: "template-2", name: "模板2", thumbnail: "🎨", size: "150x150mm" },
-    { id: "template-3", name: "模板3", thumbnail: "⬜", size: "200x200mm" },
-  ]);
+  const [templates, setTemplates] = useState([]);
+  const [filteredTemplates, setFilteredTemplates] = useState([]);
+  const [templateSearchValue, setTemplateSearchValue] = useState('');
+  const [templateLoading, setTemplateLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [newTemplateFile, setNewTemplateFile] = useState(null);
   const [isAutoCorrecting, setIsAutoCorrecting] = useState(false);
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [uploadForm] = Form.useForm();
+  const [uploading, setUploading] = useState(false);
   
   const sourceCanvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -380,6 +383,38 @@ export default function ImageCorrectionPage() {
     message.success("图像已下载");
   };
 
+  // ==================== 模板管理功能 ====================  
+  
+  // 获取模板列表
+  const fetchTemplates = async () => {
+    setTemplateLoading(true);
+    try {
+      const response = await templateApi.getTemplates();
+      const templateList = response.data || [];
+      setTemplates(templateList);
+      setFilteredTemplates(templateList);
+    } catch (error) {
+      message.error('获取模板列表失败');
+    } finally {
+      setTemplateLoading(false);
+    }
+  };
+
+  // 模板筛选逻辑
+  useEffect(() => {
+    let result = [...templates];
+    
+    // 搜索筛选
+    if (templateSearchValue) {
+      const keyword = templateSearchValue.toLowerCase();
+      result = result.filter(t =>
+        t.name.toLowerCase().includes(keyword)
+      );
+    }
+    
+    setFilteredTemplates(result);
+  }, [templates, templateSearchValue]);
+  
   // 打开模板选择弹窗
   const openTemplateModal = () => {
     if (!hasUploadedImage) {
@@ -388,14 +423,14 @@ export default function ImageCorrectionPage() {
     }
     setTemplateModalVisible(true);
     setSelectedTemplate(null);
-    setNewTemplateFile(null);
+    fetchTemplates();
   };
 
   // 关闭模板选择弹窗
   const closeTemplateModal = () => {
     setTemplateModalVisible(false);
     setSelectedTemplate(null);
-    setNewTemplateFile(null);
+    setTemplateSearchValue('');
   };
 
   // 选择现有模板
@@ -403,12 +438,38 @@ export default function ImageCorrectionPage() {
     setSelectedTemplate(template);
   };
 
+  // 上传新模板弹窗
+  const openUploadModal = () => {
+    setUploadModalVisible(true);
+    uploadForm.resetFields();
+  };
+  
   // 上传新模板
-  const handleUploadNewTemplate = (file) => {
-    setNewTemplateFile(file);
-    setSelectedTemplate({ id: "new", name: file.name, isNew: true });
-    message.success("新模板已选择: " + file.name);
-    return false;
+  const handleUploadTemplate = async (values) => {
+    setUploading(true);
+    
+    try {
+      // 模拟上传延迟
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const newTemplate = {
+        id: Date.now(),
+        name: values.name,
+        templateImage: values.templateImage?.fileList?.[0] ? URL.createObjectURL(values.templateImage.fileList[0].originFileObj) : null,
+      };
+      
+      setTemplates([newTemplate, ...templates]);
+      setUploading(false);
+      setUploadModalVisible(false);
+      uploadForm.resetFields();
+      message.success('模板上传成功');
+      
+      // 自动选择新上传的模板
+      setSelectedTemplate(newTemplate);
+    } catch (error) {
+      message.error('上传失败');
+      setUploading(false);
+    }
   };
 
   // 根据模板自动矫正
@@ -423,13 +484,6 @@ export default function ImageCorrectionPage() {
 
     // 模拟后端API调用
     setTimeout(() => {
-      // 模拟后端返回矫正后的图像
-      // 实际应用中这里应该是:
-      // 1. 创建 FormData
-      // 2. 添加原始图片和模板
-      // 3. 发送到后端 API
-      // 4. 接收返回的矫正后图片
-      
       const canvas = resultCanvasRef.current;
       const img = imgRef.current;
       if (canvas && img && imgSize) {
@@ -447,27 +501,7 @@ export default function ImageCorrectionPage() {
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           ctx.clearRect(0, 0, cssW, cssH);
 
-          // 模拟矫正效果：根据模板类型应用不同的变换
           ctx.save();
-          
-          if (selectedTemplate.id === "template-1") {
-            // A4纸模板 - 应用透视矫正
-            ctx.translate(cssW / 2, cssH / 2);
-            ctx.scale(1.1, 1.1);
-            ctx.translate(-cssW / 2, -cssH / 2);
-          } else if (selectedTemplate.id === "template-2") {
-            // 涂色卡模板 - 居中裁剪
-            const size = Math.min(cssW, cssH);
-            const offsetX = (cssW - size) / 2;
-            const offsetY = (cssH - size) / 2;
-            ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, cssW, cssH);
-          } else if (selectedTemplate.id === "template-3") {
-            // 方格纸模板 - 旋转校正
-            ctx.translate(cssW / 2, cssH / 2);
-            ctx.rotate(-2 * Math.PI / 180); // 假设旋转-2度
-            ctx.translate(-cssW / 2, -cssH / 2);
-          }
-          
           ctx.drawImage(img, 0, 0, cssW, cssH);
           ctx.restore();
 
@@ -744,68 +778,99 @@ export default function ImageCorrectionPage() {
 
       {/* 模板选择弹窗 */}
       <Modal
-        title="选择或上传模板"
+        title="选择模板"
         open={templateModalVisible}
-        onOk={handleAutoCorrectWithTemplate}
         onCancel={closeTemplateModal}
-        okText="开始自动矫正"
-        cancelText="取消"
-        width={600}
-        okButtonProps={{ disabled: !selectedTemplate, loading: isAutoCorrecting }}
+        footer={[
+          <Button key="cancel" onClick={closeTemplateModal}>
+            取消
+          </Button>,
+          <Button 
+            key="upload" 
+            icon={<PlusOutlined />}
+            onClick={openUploadModal}
+          >
+            上传新模板
+          </Button>,
+          <Button 
+            key="ok" 
+            type="primary" 
+            onClick={handleAutoCorrectWithTemplate}
+            disabled={!selectedTemplate}
+            loading={isAutoCorrecting}
+          >
+            开始自动矫正
+          </Button>
+        ]}
+        width={900}
       >
-        <Space direction="vertical" style={{ width: "100%" }} size="large">
-          {/* 现有模板列表 */}
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 12 }}>
-              现有模板（点击选择）
-            </Text>
-            <List
-              grid={{ gutter: 16, column: 3 }}
-              dataSource={existingTemplates}
-              renderItem={(template) => (
-                <List.Item>
-                  <Card
-                    size="small"
-                    hoverable
-                    onClick={() => handleSelectTemplate(template)}
-                    style={{
-                      border: selectedTemplate?.id === template.id ? "2px solid #1890ff" : "1px solid #d9d9d9",
-                      background: selectedTemplate?.id === template.id ? "#e6f7ff" : "#fff",
-                      cursor: "pointer"
-                    }}
-                  >
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}>{template.thumbnail}</div>
-                      <Text strong style={{ fontSize: 12, display: "block" }}>{template.name}</Text>
-                      <Text type="secondary" style={{ fontSize: 10 }}>{template.size}</Text>
-                    </div>
-                  </Card>
-                </List.Item>
-              )}
-            />
-          </div>
+        <Space direction="vertical" style={{ width: "100%" }} size="middle">
+          {/* 搜索栏 */}
+          <Input
+            placeholder="搜索模板名称..."
+            prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+            value={templateSearchValue}
+            onChange={(e) => setTemplateSearchValue(e.target.value)}
+            style={{ width: '100%' }}
+            allowClear
+          />
 
-          {/* 上传新模板 */}
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 12 }}>
-              或上传新模板
-            </Text>
-            <Upload.Dragger
-              accept="image/*"
-              beforeUpload={handleUploadNewTemplate}
-              showUploadList={false}
-              disabled={!!newTemplateFile}
-            >
-              <p className="ant-upload-drag-icon">
-                {newTemplateFile ? <FileImageOutlined /> : <PlusOutlined />}
-              </p>
-              <p className="ant-upload-text">
-                {newTemplateFile ? `已选择: ${newTemplateFile.name}` : "点击或拖拽上传新模板"}
-              </p>
-              <p className="ant-upload-hint">
-                支持 JPG、PNG 格式，将作为参考模板
-              </p>
-            </Upload.Dragger>
+          {/* 模板列表 */}
+          <div style={{ minHeight: 300 }}>
+            {filteredTemplates.length === 0 ? (
+              <Empty description="暂无模板" image={Empty.PRESENTED_IMAGE_SIMPLE}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={openUploadModal}>
+                  上传新模板
+                </Button>
+              </Empty>
+            ) : (
+              <List
+                grid={{ gutter: 16, column: 4 }}
+                dataSource={filteredTemplates}
+                loading={templateLoading}
+                renderItem={(template) => (
+                  <List.Item>
+                    <Card
+                      size="small"
+                      hoverable
+                      onClick={() => handleSelectTemplate(template)}
+                      style={{
+                        border: selectedTemplate?.id === template.id ? "2px solid #1890ff" : "1px solid #d9d9d9",
+                        background: selectedTemplate?.id === template.id ? "#e6f7ff" : "#fff",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ 
+                          width: '100%', 
+                          height: 100, 
+                          background: '#f5f5f5',
+                          borderRadius: 4,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          marginBottom: 8
+                        }}>
+                          {template.templateImage ? (
+                            <img 
+                              src={template.templateImage} 
+                              alt={template.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <FileOutlined style={{ fontSize: 32, color: '#bfbfbf' }} />
+                          )}
+                        </div>
+                        <Text strong style={{ fontSize: 12, display: "block" }} ellipsis={{ tooltip: template.name }}>
+                          {template.name}
+                        </Text>
+                      </div>
+                    </Card>
+                  </List.Item>
+                )}
+              />
+            )}
           </div>
 
           {/* 已选模板信息 */}
@@ -820,12 +885,76 @@ export default function ImageCorrectionPage() {
                 <CheckCircleOutlined style={{ color: "#52c41a" }} />
                 <Text>
                   已选择模板: <strong>{selectedTemplate.name}</strong>
-                  {selectedTemplate.isNew && <Tag color="orange" style={{ marginLeft: 8 }}>新模板</Tag>}
                 </Text>
               </Space>
             </div>
           )}
         </Space>
+      </Modal>
+
+      {/* 模板上传弹窗 */}
+      <Modal
+        title="上传新模板"
+        open={uploadModalVisible}
+        onCancel={() => {
+          setUploadModalVisible(false);
+          uploadForm.resetFields();
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={uploadForm}
+          layout="vertical"
+          onFinish={handleUploadTemplate}
+          style={{ padding: '16px 0' }}
+        >
+          <Form.Item
+            name="name"
+            label="模板名称"
+            rules={[{ required: true, message: '请输入模板名称' }]}
+          >
+            <Input placeholder="例如：精细动作能力分析模板" />
+          </Form.Item>
+          
+          <Form.Item
+            name="templateImage"
+            label="模板照片"
+            rules={[{ required: true, message: '请上传模板照片' }]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => e?.fileList}
+          >
+            <Upload.Dragger
+              accept=".jpg,.jpeg,.png,.webp"
+              maxCount={1}
+              beforeUpload={() => false}
+              listType="picture"
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined />
+              </p>
+              <p className="ant-upload-text">点击或拖拽模板照片到此处上传</p>
+              <p className="ant-upload-hint">
+                支持 .jpg, .jpeg, .png, .webp 格式的图片文件
+              </p>
+            </Upload.Dragger>
+          </Form.Item>
+          
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => setUploadModalVisible(false)}>
+                取消
+              </Button>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={uploading}
+              >
+                上传
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

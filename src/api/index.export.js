@@ -5,5 +5,5 @@ export { default as groupApi } from './group';
 export { default as datasetApi } from './dataset';
 export { default as analysisApi } from './analysis';
 export { default as templateApi } from './template';
-export { default as toolApi } from './tool';
 export { default as reportApi } from './report';
+export { default as toolApi } from './tool';
